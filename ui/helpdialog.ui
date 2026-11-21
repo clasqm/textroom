@@ -90,11 +90,11 @@
    </property>
    <property name="text" >
     <string>F1           → Help
-Ctrl+P       → Options
+Alt+P       → Options
 F11          → Fullscreen
-Ctrl+H       → About
-Ctrl+M       → Minimize
-Ctrl+Q       → Quit</string>
+Alt+H       → About
+Alt+M       → Minimize
+Alt+Q       → Quit</string>
    </property>
    <property name="wordWrap" >
     <bool>true</bool>
@@ -152,12 +152,12 @@ Ctrl+Q       → Quit</string>
     </font>
    </property>
    <property name="text" >
-    <string>Ctrl+X       → Cut
-Ctrl+C       → Copy
-Ctrl+V       → Paste
-Ctrl+A       → Select All
-Ctrl+Z       → Undo
-Ctrl+Sift+Z  → Redo</string>
+    <string>Alt+X       → Cut
+Alt+C       → Copy
+Alt+V       → Paste
+Alt+A       → Select All
+Alt+Z       → Undo
+Alt+Shift+Z  → Redo</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_4" >
@@ -239,11 +239,11 @@ Ctrl+Sift+Z  → Redo</string>
     </font>
    </property>
    <property name="text" >
-    <string>Ctrl+W       → Font pick
-Ctrl+B       → Bold
-Ctrl+I       → Italic
-Ctrl+U       → Underline
-Ctrl+Up/Down → Font Size</string>
+    <string>Alt+W       → Font pick
+Alt+B       → Bold
+Alt+I       → Italic
+Alt+U       → Underline
+Alt+Up/Down → Font Size</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_2" >
@@ -301,10 +301,10 @@ Ctrl+Up/Down → Font Size</string>
     <string notr="true" />
    </property>
    <property name="text" >
-    <string>Ctrl+N       → New
-Ctrl+O       → Open
-Ctrl+S       → Save
-Ctrl+Shift+S → Save As</string>
+    <string>Alt+N       → New
+Alt+O       → Open
+Alt+S       → Save
+Alt+Shift+S → Save As</string>
    </property>
    <property name="wordWrap" >
     <bool>true</bool>
@@ -363,9 +363,9 @@ Ctrl+Shift+S → Save As</string>
    </property>
    <property name="text" >
     <string>Shift+F4     → Back to caret
-Ctrl+D       → Insert Date
-Ctrl+T       → Insert Time
-Ctrl+F       → Find
+Alt+D       → Insert Date
+Alt+T       → Insert Time
+Alt+F       → Find
    F3        → Find Next
    Shift+F3  → Find Previous</string>
    </property>
