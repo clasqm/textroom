@@ -31,6 +31,7 @@
 
 #include <QColorDialog>
 #include <QDateTime>
+#include <QScreen>
 #include <QSettings>
 
 #include "optionsdialog.h"
@@ -110,7 +111,9 @@ void OptionsDialog::reaSettings()
 	QDate date;
 	QDate dateselected = date.fromString(datetext, "yyyyMMdd");
 	ui.calendarWidget->setSelectedDate(dateselected);
-	ui.editorWidthSpinBox->setValue( settings.value	("EditorWidth", 800).toInt());  
+	const int screenWidth = QApplication::primaryScreen()
+		? QApplication::primaryScreen()->availableGeometry().width() : 800;
+	ui.editorWidthSpinBox->setValue( settings.value("EditorWidth", screenWidth).toInt());
 	ui.editorTopSpaceSpinBox->setValue( settings.value("EditorTopSpace", 0).toInt());
 	ui.editorBottomSpaceSpinBox->setValue( settings.value("EditorBottomSpace", 0).toInt());
 	ui.spinBox->setValue( settings.value("TimedWriting", 0 ).toInt());

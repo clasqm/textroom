@@ -35,6 +35,7 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
+#include <QScreen>
 #include <QSettings>
 #include <QShortcut>
 #include <QStandardPaths>
@@ -96,6 +97,9 @@ TextRoom::TextRoom(QWidget *parent, Qt::WindowFlags f)
 {
 	setupUi(this);
 	setObjectName("textroom");
+
+	// Tab-stop widths are expressed as distances since Qt 5.10.
+	textEdit->setTabStopDistance(50);
 
 	readSettings();
 
@@ -653,9 +657,12 @@ void TextRoom::readSettings()
 	QFile file( settings.fileName() );
 	if ( !file.exists() )
 	{
-		toggleFullScreen();
+		// First run: create the settings file, then carry on so that the
+		// defaults below are applied. Returning here left the designer
+		// palette (yellow on white) and the expanding layout spacers in
+		// place, which squeezed the editor into a small centred block.
+		showFullScreen();
 		writeSettings();
-		return;
 	}
 
 	if ( settings.value("WindowState/ShowFullScreen", true).toBool() )
@@ -719,7 +726,9 @@ void TextRoom::readSettings()
 	deadline = QDate::fromString(deadlinetext, "yyyyMMdd");
 	wordcount = settings.value("WordCount", 0).toInt();
 	wordcounttext = settings.value("WordCount", 0).toString();
-	editorWidth = settings.value("EditorWidth", 800).toInt();
+	const int screenWidth = QApplication::primaryScreen()
+		? QApplication::primaryScreen()->availableGeometry().width() : 800;
+	editorWidth = settings.value("EditorWidth", screenWidth).toInt();
 	editorTopSpace = settings.value("EditorTopSpace", 0).toInt();
 	editorBottomSpace = settings.value("EditorBottomSpace", 0).toInt();
 	alarm = settings.value("TimedWriting", 0).toInt();
