@@ -27,7 +27,7 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "searchdialog.h"
 

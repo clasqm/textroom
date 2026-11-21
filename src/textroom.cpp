@@ -27,17 +27,70 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
-#include <SDL/SDL.h>
-#include <SDL/SDL_mixer.h>
+#include <QtWidgets>
+
+#include <QDate>
+#include <QDateTime>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QFileSystemWatcher>
+#include <QSettings>
+#include <QShortcut>
+#include <QStandardPaths>
+#include <QTextCodec>
+#include <QTextStream>
+#include <QTimer>
+
+#ifdef HAVE_SDL
+#include <SDL.h>
+#include <SDL_mixer.h>
+#endif
+
+#include <cstdio>
+
 #include "textroom.h"
 #include "optionsdialog.h"
 #include "helpdialog.h"
 #include "searchdialog.h"
 #include "font.h"
 
+namespace {
+
+// Qt 5 dropped the QShortcut(key, parent, SLOT(...)) constructor, so every
+// shortcut is created and connected explicitly.
+template <typename Slot>
+void addShortcut(TextRoom *receiver, const QKeySequence &key, Slot slot)
+{
+	QShortcut *shortcut = new QShortcut(key, receiver);
+	QObject::connect(shortcut, &QShortcut::activated, receiver, slot);
+}
+
+// Look for the typing sound files next to the binary and in the usual data
+// locations instead of a hardcoded path.
+QString findSoundFile(const QString &fileName)
+{
+	const QString appDir = QCoreApplication::applicationDirPath();
+	const QStringList candidates = {
+		appDir + QLatin1String("/../share/textroom/") + fileName,
+		appDir + QLatin1String("/sounds/") + fileName,
+		QStandardPaths::writableLocation(QStandardPaths::AppDataLocation)
+			+ QLatin1String("/sounds/") + fileName,
+		QDir::currentPath() + QLatin1String("/resource/sounds/") + fileName
+	};
+
+	for (const QString &candidate : candidates) {
+		if (QFileInfo::exists(candidate))
+			return candidate;
+	}
+
+	return QString();
+}
+
+} // namespace
+
 	
-TextRoom::TextRoom(QWidget *parent, Qt::WFlags f)
+TextRoom::TextRoom(QWidget *parent, Qt::WindowFlags f)
 		: QWidget(parent, f), sentenceTally(0),
 		sdlInitialized(false), sdlFailed(false)
 {
@@ -56,32 +109,32 @@ TextRoom::TextRoom(QWidget *parent, Qt::WFlags f)
 	helpDialog = new HelpDialog(this);
 	selectFont = new SelectFont(this);
 	
-	new QShortcut ( QKeySequence(QKeySequence::New), this, SLOT( newFile() ) );
-	new QShortcut ( QKeySequence(QKeySequence::Open), this, SLOT( open() ) );
-	new QShortcut ( QKeySequence(QKeySequence::Save), this, SLOT( save() ) );
-	new QShortcut ( QKeySequence(QKeySequence::HelpContents), this, SLOT( help() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+P", "Options")), this, SLOT( options() ) );
-	new QShortcut ( QKeySequence(tr("Shift+Ctrl+S", "Save As")), this, SLOT( saveAs() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+D", "Insert Date")), this, SLOT( insertDate() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+T", "Insert Time")), this, SLOT( insertTime() ) );	
-	new QShortcut ( QKeySequence(tr("Ctrl+H", "About TextRoom")), this, SLOT( about() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+Q", "Quit Application")) , this, SLOT( close() ) );
-	new QShortcut ( QKeySequence(tr("Alt+F4", "Quit Application")) , this, SLOT( close() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+F", "Find Text")) , this, SLOT( find() ) );
-	new QShortcut ( QKeySequence(tr("F11", "Toggle Fullscreen")) , this, SLOT( toggleFullScreen() ) );
-	new QShortcut ( QKeySequence(tr("Esc", "Toggle Fullscreen")) , this, SLOT( toggleEscape() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+M", "Minimize TextRoom")) , this, SLOT( showMinimized() ) );
-	new QShortcut ( QKeySequence(tr("F3", "Find Next")) , this, SLOT( find_next() ) );
-	new QShortcut ( QKeySequence(tr("Shift+F3", "Find Previous")) , this, SLOT( find_previous() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+B", "Bold")) , this, SLOT( textBold() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+I", "Italic")) , this, SLOT( textItalic() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+U", "Find Previous")) , this, SLOT( textUnderline() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+Up", "Increase Text Size")) , this, SLOT( textSizeUp() ) );
-	new QShortcut ( QKeySequence(tr("Ctrl+Down", "Decrease Text Size")) , this, SLOT( textSizeDown() ) );	
-	new QShortcut ( QKeySequence(tr("Ctrl+W", "Select Font")) , this, SLOT( changeFont() ) );	
+	addShortcut(this, QKeySequence(QKeySequence::New), &TextRoom::newFile);
+	addShortcut(this, QKeySequence(QKeySequence::Open), &TextRoom::open);
+	addShortcut(this, QKeySequence(QKeySequence::Save), &TextRoom::save);
+	addShortcut(this, QKeySequence(QKeySequence::HelpContents), &TextRoom::help);
+	addShortcut(this, QKeySequence(tr("Ctrl+P", "Options")), &TextRoom::options);
+	addShortcut(this, QKeySequence(tr("Shift+Ctrl+S", "Save As")), &TextRoom::saveAs);
+	addShortcut(this, QKeySequence(tr("Ctrl+D", "Insert Date")), &TextRoom::insertDate);
+	addShortcut(this, QKeySequence(tr("Ctrl+T", "Insert Time")), &TextRoom::insertTime);	
+	addShortcut(this, QKeySequence(tr("Ctrl+H", "About TextRoom")), &TextRoom::about);
+	addShortcut(this, QKeySequence(tr("Ctrl+Q", "Quit Application")) , &TextRoom::close);
+	addShortcut(this, QKeySequence(tr("Alt+F4", "Quit Application")) , &TextRoom::close);
+	addShortcut(this, QKeySequence(tr("Ctrl+F", "Find Text")) , &TextRoom::find);
+	addShortcut(this, QKeySequence(tr("F11", "Toggle Fullscreen")) , &TextRoom::toggleFullScreen);
+	addShortcut(this, QKeySequence(tr("Esc", "Toggle Fullscreen")) , &TextRoom::toggleEscape);
+	addShortcut(this, QKeySequence(tr("Ctrl+M", "Minimize TextRoom")) , &TextRoom::showMinimized);
+	addShortcut(this, QKeySequence(tr("F3", "Find Next")) , &TextRoom::find_next);
+	addShortcut(this, QKeySequence(tr("Shift+F3", "Find Previous")) , &TextRoom::find_previous);
+	addShortcut(this, QKeySequence(tr("Ctrl+B", "Bold")) , &TextRoom::textBold);
+	addShortcut(this, QKeySequence(tr("Ctrl+I", "Italic")) , &TextRoom::textItalic);
+	addShortcut(this, QKeySequence(tr("Ctrl+U", "Find Previous")) , &TextRoom::textUnderline);
+	addShortcut(this, QKeySequence(tr("Ctrl+Up", "Increase Text Size")) , &TextRoom::textSizeUp);
+	addShortcut(this, QKeySequence(tr("Ctrl+Down", "Decrease Text Size")) , &TextRoom::textSizeDown);	
+	addShortcut(this, QKeySequence(tr("Ctrl+W", "Select Font")) , &TextRoom::changeFont);	
 	
 	// Service: show cursor
-	new QShortcut ( QKeySequence(tr("Shift+F4", "Show Cursor")) , this, SLOT( sCursor() ) );
+	addShortcut(this, QKeySequence(tr("Shift+F4", "Show Cursor")) , &TextRoom::sCursor);
 
 #ifdef Q_OS_WIN32
 	QSettings settings(QDir::homePath()+tr("/Application Data/")+qApp->applicationName()+".ini", QSettings::IniFormat);
@@ -92,17 +145,17 @@ TextRoom::TextRoom(QWidget *parent, Qt::WFlags f)
 	fw = new QFileSystemWatcher(this);
 	fw->addPath( settings.fileName() );
 
-	connect(fw, SIGNAL(fileChanged(const QString)),
-			this, SLOT(readSettings()));
+	connect(fw, &QFileSystemWatcher::fileChanged,
+			this, &TextRoom::readSettings);
 	
-	connect(textEdit->document(), SIGNAL(contentsChanged()),
-			this, SLOT(documentWasModified()));
+	connect(textEdit->document(), &QTextDocument::contentsChanged,
+			this, &TextRoom::documentWasModified);
 
-	connect(textEdit->verticalScrollBar(), SIGNAL(valueChanged(int)),
-			this, SLOT(vPositionChanged()));
+	connect(textEdit->verticalScrollBar(), &QScrollBar::valueChanged,
+			this, &TextRoom::vPositionChanged);
 
-	connect(horizontalSlider, SIGNAL(valueChanged(int)),
-			this, SLOT(hSliderPositionChanged()));
+	connect(horizontalSlider, &QScrollBar::valueChanged,
+			this, &TextRoom::hSliderPositionChanged);
 
 	// check if we need to open some file at startup
 	const QStringList args = QCoreApplication::arguments();
@@ -127,7 +180,7 @@ TextRoom::TextRoom(QWidget *parent, Qt::WFlags f)
 	writeSettings();
 
 	QTimer *timer = new QTimer(this);
-	connect(timer, SIGNAL(timeout()), this, SLOT(getFileStatus()));
+	connect(timer, &QTimer::timeout, this, &TextRoom::getFileStatus);
 	timer->start(1000);
 }
 
@@ -537,22 +590,22 @@ void TextRoom::documentWasModified()
 
 	if (isSound && sdlInitialized)
 	{
+#ifdef HAVE_SDL
 		if (parasnew > parasold)
 		{
 			if (Mix_PlayChannel(-1, soundenter, 0) == -1)
 			{
-				printf("Mix_PlayChannel: %s\n",Mix_GetError());
-    
+				fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 			}
 		}
 		else
-		{ 
+		{
 			if (Mix_PlayChannel(-1, soundany, 0) == -1)
 			{
-				printf("Mix_PlayChannel: %s\n",Mix_GetError());
-    
+				fprintf(stderr, "Mix_PlayChannel: %s\n", Mix_GetError());
 			}
 		}
+#endif
 	}
 
 	parasold = parasnew;
@@ -626,8 +679,8 @@ void TextRoom::readSettings()
 
 	loadStyleSheet(textColor, back, status_c, status_b);
 
-	// oxygen does weird stuff with the background
-	QApplication::setStyle("plastique");
+	// "plastique" no longer exists in Qt 5; Fusion is the closest equivalent
+	QApplication::setStyle(QStringLiteral("Fusion"));
 
 	QStringList fontS;
 	QFont font;
@@ -690,7 +743,7 @@ void TextRoom::readSettings()
 	timeOut = alarm * 60000;
 	if (alarm != 0)
 	{
-		QTimer::singleShot(timeOut, this, SLOT(alarmTime()));
+		QTimer::singleShot(timeOut, this, &TextRoom::alarmTime);
 	}
 	
 	textEdit->setMaximumWidth(editorWidth);
@@ -791,7 +844,6 @@ void TextRoom::loadStyleSheet(const QString &fcolor, const QString &bcolor, cons
 	TextRoom::setPalette(palette);
 
 	QPalette palette2;
-	palette2.setColor(QPalette::Foreground, scolor);
 	palette2.setColor(QPalette::WindowText, scolor);
 	palette2.setColor(QPalette::Window, sbcolor);
 	palette2.setColor(QPalette::Button, sbcolor);
@@ -959,6 +1011,7 @@ void TextRoom::hSliderPositionChanged()
 
 void TextRoom::initSDLMixer()
 {
+#ifdef HAVE_SDL
 	int audio_rate = 44100;
 	Uint16 audio_format = AUDIO_S16SYS;
 	int audio_channels = 2;
@@ -969,58 +1022,77 @@ void TextRoom::initSDLMixer()
 		// don't initialize again if it failed once or is still initialized
 		return;
 	}
-	
+
 	// assume the worst, method will return on error or set this to false at the end
 	sdlFailed = true;
-	
+
 	if (SDL_Init(SDL_INIT_AUDIO) != 0)
 	{
 		QMessageBox::warning(this, qApp->applicationName(),
-			tr("Unable to initialize SDL:") + QString(SDL_GetError()), QMessageBox::Ok);
+			tr("Unable to initialize SDL: ") + QString(SDL_GetError()), QMessageBox::Ok);
 		return;
 	}
 
 	if(Mix_OpenAudio(audio_rate, audio_format, audio_channels, audio_buffers) != 0)
 	{
 		QMessageBox::warning(this, qApp->applicationName(),
-			tr("Unable to initialize audio:") + QString(Mix_GetError()), QMessageBox::Ok);
+			tr("Unable to initialize audio: ") + QString(Mix_GetError()), QMessageBox::Ok);
 		SDL_QuitSubSystem(SDL_INIT_AUDIO);
 		return;
 	}
 
-#ifdef Q_OS_WIN32
-	soundany = Mix_LoadWAV("sounds/keyany.wav");
-#else
-	soundany = Mix_LoadWAV("/usr/local/share/textroom/keyany.wav");
-#endif
-	if(soundany == NULL)
+	const QString anyFile = findSoundFile("keyany.wav");
+	const QString enterFile = findSoundFile("keyenter.wav");
+	if (anyFile.isEmpty() || enterFile.isEmpty())
 	{
 		QMessageBox::warning(this, qApp->applicationName(),
-			tr("Could not load WAV file:") + QString(Mix_GetError()), QMessageBox::Ok);
+			tr("Could not find the typing sound files (keyany.wav, keyenter.wav)."),
+			QMessageBox::Ok);
 		destroySDLMixer();
 		return;
 	}
 
-#ifdef Q_OS_WIN32
-	soundenter = Mix_LoadWAV("sounds/keyenter.wav");
-#else
-	soundenter = Mix_LoadWAV("/usr/local/share/textroom/keyenter.wav");
-#endif
+	soundany = Mix_LoadWAV(QFile::encodeName(anyFile).constData());
+	if(soundany == NULL)
+	{
+		QMessageBox::warning(this, qApp->applicationName(),
+			tr("Could not load WAV file: ") + QString(Mix_GetError()), QMessageBox::Ok);
+		destroySDLMixer();
+		return;
+	}
+
+	soundenter = Mix_LoadWAV(QFile::encodeName(enterFile).constData());
 	if(soundenter == NULL)
 	{
 		QMessageBox::warning(this, qApp->applicationName(),
-			tr("Could not load WAV file:") + QString(Mix_GetError()), QMessageBox::Ok);
+			tr("Could not load WAV file: ") + QString(Mix_GetError()), QMessageBox::Ok);
 		destroySDLMixer();
 		return;
 	}
 
 	sdlFailed = false;
 	sdlInitialized = true;
+#else
+	// built without SDL support
+	sdlFailed = true;
+#endif
 }
 
 void TextRoom::destroySDLMixer()
 {
+#ifdef HAVE_SDL
+	if (soundany)
+	{
+		Mix_FreeChunk(soundany);
+		soundany = NULL;
+	}
+	if (soundenter)
+	{
+		Mix_FreeChunk(soundenter);
+		soundenter = NULL;
+	}
 	Mix_CloseAudio();
 	SDL_QuitSubSystem(SDL_INIT_AUDIO);
+#endif
 	sdlInitialized = false;
 }

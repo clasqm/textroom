@@ -30,8 +30,16 @@
 #ifndef TEXTROOM_H
 #define TEXTROOM_H
 
-#include <QtGui>
-#include <SDL/SDL_mixer.h>
+#include <QByteArray>
+#include <QDate>
+#include <QFont>
+#include <QString>
+#include <QWidget>
+
+#ifdef HAVE_SDL
+#include <SDL.h>
+#include <SDL_mixer.h>
+#endif
 
 #include "ui_textroom.h"
 
@@ -47,7 +55,7 @@ class TextRoom : public QWidget, public Ui::TextRoomMain
 	Q_OBJECT
  
 public:
-	TextRoom(QWidget *parent = 0, Qt::WFlags f = 0 );
+	TextRoom(QWidget *parent = 0, Qt::WindowFlags f = Qt::WindowFlags() );
 	~TextRoom();
 
 private slots:
@@ -147,8 +155,10 @@ private:
 	int channel;
 	bool sdlInitialized;
 	bool sdlFailed;
+#ifdef HAVE_SDL
 	Mix_Chunk *soundenter;
 	Mix_Chunk *soundany;
+#endif
 	bool wordCountChanged;
 
 protected:

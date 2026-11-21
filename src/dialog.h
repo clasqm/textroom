@@ -31,7 +31,7 @@
 #ifndef __DIALOG_H__
 #define __DIALOG_H__
 
-#include <QtGui>
+#include <QtWidgets>
 #include <QWidget>
 
 #include "ui_dialog.h"

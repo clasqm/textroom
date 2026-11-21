@@ -29,7 +29,7 @@
 
 
 #include "dialog.h"
-#include <QtGui>
+#include <QtWidgets>
 #include <QWidget>
 #include "textroom.h"
 

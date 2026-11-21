@@ -32,27 +32,27 @@ by similar text editors such as Q10, JDarkRoom and so on.
 
 2. Requirements
 ---------------
-TextRoom requires Qt library version >=4.3.2.
-It *may* work with earlier versions of Qt (from 4.x family), but it was not
-tested.
+TextRoom requires Qt 5 (on Haiku: qt5 and qt5_devel).
+
+The optional typing sounds need SDL and SDL_mixer: either SDL 1.2
+(libsdl_devel and sdl_mixer_devel) or SDL 2 (libsdl2_devel and
+sdl2_mixer_devel). Without them TextRoom is built without sounds; you can
+also pass -DTEXTROOM_SOUND=OFF to cmake.
 
 3. Installation
 ---------------
-To compile TextRoom, you will need Qt4 development packages
-(usually named -devel- or -dev in some distros). Cd to the directory
-this README file is. Compilation includes three steps:
+Cd to the directory this README file is and build with CMake:
 
-qmake-qt4
+mkdir build && cd build
+cmake ..
 make
 
-and then, as root:
+"make install" is optional; it installs the binary, the sounds and the
+documentation below CMAKE_INSTALL_PREFIX. On Haiku the default prefix is
+~/config/non-packaged; change it with cmake -DCMAKE_INSTALL_PREFIX=...
 
-make install
-
-"make install" copies the newly compiled "bin/textroom" to "/usr/local/bin".
-You can change its path by editing textroom.pro
-
-The program stores its preferences in ~/.config/textroom/TextRoom.conf
+The program stores its preferences through QSettings, which on Haiku
+defaults to ~/config/settings/TextRoom.conf
 
 4. Features
 

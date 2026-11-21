@@ -371,8 +371,6 @@ Ctrl+F       → Find
    </property>
   </widget>
  </widget>
- <resources>
-  <include location="../resource/textroom.qrc" />
- </resources>
+ <resources/>
  <connections/>
 </ui>

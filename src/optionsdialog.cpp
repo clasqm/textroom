@@ -27,7 +27,11 @@
 **
 ****************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
+
+#include <QColorDialog>
+#include <QDateTime>
+#include <QSettings>
 
 #include "optionsdialog.h"
 #include "textroom.h"

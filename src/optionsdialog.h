@@ -30,6 +30,7 @@
 #ifndef __OPTIONSDIALOG_H__
 #define __OPTIONSDIALOG_H__
 
+#include <QColor>
 #include <QDialog>
 
 #include "ui_optionsdialog.h"

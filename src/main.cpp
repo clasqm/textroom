@@ -27,10 +27,11 @@
 **
 ****************************************************************************/
 
-#include <QApplication>
-#include <QSplashScreen>
+#include <QtWidgets>
+
+#include <QDir>
+#include <QSettings>
 #include <QTimer>
-#include <QtGui>
  
 #include "textroom.h"
 
@@ -55,17 +56,17 @@ int main(int argc, char ** argv)
 		{
 			splash = new QSplashScreen(splashpix);
 			splash->show();
-			splash->showMessage(QObject::tr("Loading... "), Qt::AlignBottom+Qt::AlignRight, QColor(128,128,128));
+			splash->showMessage(QObject::tr("Loading... "), Qt::AlignBottom | Qt::AlignRight, QColor(128,128,128));
 		}
 	}
 	
-	TextRoom *win = new TextRoom(NULL);
+	TextRoom *win = new TextRoom();
 	win->show();
 
 	if (splash)
 	{
 		QTimer *timer = new QTimer(win);
-		QObject::connect(timer, SIGNAL(timeout()), splash, SLOT(close()));
+		QObject::connect(timer, &QTimer::timeout, splash, &QSplashScreen::close);
 		timer->start(2000);
 		timer->setSingleShot(true);
 		//splash->finish(win);
