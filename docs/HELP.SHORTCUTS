@@ -6,6 +6,7 @@ Escape - Quit or exit fullscreen (depends on current active window state)
 Alt+H - About
 Alt+M - Minimize TextRoom
 Alt+Q - Quit
+Alt+P - Options
 
 Alt+N - New
 Alt+O - Open
@@ -17,12 +18,16 @@ Alt+C - Copy
 Alt+V - Paste
 Alt+A - Select All
 Alt+Z - Undo (Alt+Shift+Z to Redo)
-Alt+T - Indent first lines (useful due to unresolved bug)
+
+Alt+W - Select font
+Alt+B - Bold
+Alt+I - Italic
+Alt+U - Underline
+Alt+Up / Alt+Down - Increase / decrease font size
+
 Shift+F4 - Go back to cursor position
+Alt+D - Insert date
+Alt+T - Insert time
 Alt+F - Find
 F3 - Find Next
 Shift+F3 - Find previous
-
-Alt+D - Show date and time in statusbar
-Alt+L - Show statistics in statusbar
-Alt+U - Options

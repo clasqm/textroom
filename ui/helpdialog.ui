@@ -37,10 +37,10 @@
   <widget class="QLabel" name="label" >
    <property name="geometry" >
     <rect>
-     <x>110</x>
-     <y>70</y>
-     <width>151</width>
-     <height>111</height>
+     <x>95</x>
+     <y>60</y>
+     <width>205</width>
+     <height>115</height>
     </rect>
    </property>
    <property name="palette" >
@@ -82,16 +82,17 @@
    </property>
    <property name="font" >
     <font>
-     <pointsize>8</pointsize>
+     <family>monospace</family>
+     <pointsize>10</pointsize>
     </font>
    </property>
    <property name="styleSheet" >
     <string notr="true" />
    </property>
    <property name="text" >
-    <string>F1           → Help
+    <string>F1          → Help
 Alt+P       → Options
-F11          → Fullscreen
+F11         → Fullscreen
 Alt+H       → About
 Alt+M       → Minimize
 Alt+Q       → Quit</string>
@@ -103,10 +104,10 @@ Alt+Q       → Quit</string>
   <widget class="QLabel" name="label_3" >
    <property name="geometry" >
     <rect>
-     <x>290</x>
-     <y>80</y>
-     <width>131</width>
-     <height>81</height>
+     <x>300</x>
+     <y>60</y>
+     <width>190</width>
+     <height>110</height>
     </rect>
    </property>
    <property name="palette" >
@@ -148,7 +149,8 @@ Alt+Q       → Quit</string>
    </property>
    <property name="font" >
     <font>
-     <pointsize>8</pointsize>
+     <family>monospace</family>
+     <pointsize>10</pointsize>
     </font>
    </property>
    <property name="text" >
@@ -157,16 +159,16 @@ Alt+C       → Copy
 Alt+V       → Paste
 Alt+A       → Select All
 Alt+Z       → Undo
-Alt+Shift+Z  → Redo</string>
+Alt+Shift+Z → Redo</string>
    </property>
   </widget>
   <widget class="QLabel" name="label_4" >
    <property name="geometry" >
     <rect>
-     <x>290</x>
-     <y>190</y>
-     <width>141</width>
-     <height>81</height>
+     <x>300</x>
+     <y>185</y>
+     <width>195</width>
+     <height>95</height>
     </rect>
    </property>
    <property name="palette" >
@@ -235,7 +237,8 @@ Alt+Shift+Z  → Redo</string>
    </property>
    <property name="font" >
     <font>
-     <pointsize>8</pointsize>
+     <family>monospace</family>
+     <pointsize>10</pointsize>
     </font>
    </property>
    <property name="text" >
@@ -249,10 +252,10 @@ Alt+Up/Down → Font Size</string>
   <widget class="QLabel" name="label_2" >
    <property name="geometry" >
     <rect>
-     <x>110</x>
-     <y>190</y>
-     <width>161</width>
-     <height>91</height>
+     <x>95</x>
+     <y>185</y>
+     <width>195</width>
+     <height>80</height>
     </rect>
    </property>
    <property name="palette" >
@@ -294,7 +297,8 @@ Alt+Up/Down → Font Size</string>
    </property>
    <property name="font" >
     <font>
-     <pointsize>8</pointsize>
+     <family>monospace</family>
+     <pointsize>10</pointsize>
     </font>
    </property>
    <property name="styleSheet" >
@@ -313,10 +317,10 @@ Alt+Shift+S → Save As</string>
   <widget class="QLabel" name="label_5" >
    <property name="geometry" >
     <rect>
-     <x>490</x>
-     <y>110</y>
-     <width>171</width>
-     <height>121</height>
+     <x>495</x>
+     <y>100</y>
+     <width>226</width>
+     <height>120</height>
     </rect>
    </property>
    <property name="palette" >
@@ -358,16 +362,17 @@ Alt+Shift+S → Save As</string>
    </property>
    <property name="font" >
     <font>
-     <pointsize>8</pointsize>
+     <family>monospace</family>
+     <pointsize>10</pointsize>
     </font>
    </property>
    <property name="text" >
-    <string>Shift+F4     → Back to caret
+    <string>Shift+F4    → Back to caret
 Alt+D       → Insert Date
 Alt+T       → Insert Time
 Alt+F       → Find
-   F3        → Find Next
-   Shift+F3  → Find Previous</string>
+F3          → Find Next
+Shift+F3    → Find Previous</string>
    </property>
   </widget>
  </widget>
