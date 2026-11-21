@@ -113,10 +113,14 @@ TextRoom::TextRoom(QWidget *parent, Qt::WindowFlags f)
 	helpDialog = new HelpDialog(this);
 	selectFont = new SelectFont(this);
 	
-	addShortcut(this, QKeySequence(QKeySequence::New), &TextRoom::newFile);
-	addShortcut(this, QKeySequence(QKeySequence::Open), &TextRoom::open);
-	addShortcut(this, QKeySequence(QKeySequence::Save), &TextRoom::save);
-	addShortcut(this, QKeySequence(QKeySequence::HelpContents), &TextRoom::help);
+	// Spell the standard shortcuts out instead of asking for the platform's
+	// standard keys: Qt's Ctrl is the Command (Alt) key on Haiku, and a
+	// platform theme without its own key table could otherwise leave these
+	// actions without a working shortcut.
+	addShortcut(this, QKeySequence(tr("Ctrl+N", "New File")), &TextRoom::newFile);
+	addShortcut(this, QKeySequence(tr("Ctrl+O", "Open File")), &TextRoom::open);
+	addShortcut(this, QKeySequence(tr("Ctrl+S", "Save File")), &TextRoom::save);
+	addShortcut(this, QKeySequence(tr("F1", "Help")), &TextRoom::help);
 	addShortcut(this, QKeySequence(tr("Ctrl+P", "Options")), &TextRoom::options);
 	addShortcut(this, QKeySequence(tr("Shift+Ctrl+S", "Save As")), &TextRoom::saveAs);
 	addShortcut(this, QKeySequence(tr("Ctrl+D", "Insert Date")), &TextRoom::insertDate);
@@ -305,11 +309,14 @@ void TextRoom::newFile()
 		textEdit->clear();
 		textEdit->document()->blockSignals(false);
 		
-		setCurrentFile("");
 		textEdit->setUndoRedoEnabled(true);
-		textEdit->document()->setModified(false);
 		textEdit->verticalScrollBar()->setValue(0);
 		textEdit->setFont(defaultFont);
+
+		// Setting the document font can mark the fresh document as modified,
+		// and the window title has to be rebuilt after all of that: reset the
+		// current file last so the tab and the file name bar say Untitled.txr.
+		setCurrentFile(QString());
 	}
 }
 
@@ -474,21 +481,17 @@ void TextRoom::setCurrentFile(const QString &fileName)
 	textEdit->document()->setModified(false);
 	setWindowModified(false);
 
-	QString shownName;
 	QString labelToolTip;
 	if (curFile.isEmpty())
 	{
-		shownName = "Untitled.txr";
 		labelToolTip = "";
    	}
 	else
 	{
-		shownName = strippedName(curFile);
 		labelToolTip = fileName;
 		curDir = f.absolutePath();
    	}
-	setWindowTitle(tr("%1[*] - %2").arg(shownName).arg( qApp->applicationName() ));
-	label->setText(shownName);
+	updateWindowTitle();
 	label->setToolTip(labelToolTip);
 }
 
@@ -646,21 +649,30 @@ void TextRoom::documentWasModified()
 	//getFileStatus();
 }
 
-void TextRoom::updateLabel()
+QString TextRoom::displayFileName()
 {
-	QString shownName;
 	if (curFile.isEmpty())
 	{
-		shownName = "Untitled.txr";
+		return QStringLiteral("Untitled.txr");
    	}
-	else
-	{
-		shownName = strippedName(curFile);
-   	}
+	return strippedName(curFile);
+}
 
-	if (isWindowModified()) shownName.append("*");
+void TextRoom::updateLabel()
+{
+	label->setText(displayFileName() + (isWindowModified() ? "*" : ""));
+}
 
-	label->setText(shownName);
+// Single place that builds the window title and the file name bar from the
+// document actually being edited. It is called whenever the current file or
+// its modified state changes, so the window tab cannot keep the name of a
+// document that has been replaced by a new one.
+void TextRoom::updateWindowTitle()
+{
+	const QString shownName = displayFileName();
+
+	label->setText(shownName + (isWindowModified() ? "*" : ""));
+	setWindowTitle(tr("%1[*] - %2").arg(shownName).arg( qApp->applicationName() ));
 }
 
 void TextRoom::alarmTime()

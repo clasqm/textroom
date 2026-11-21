@@ -99,6 +99,8 @@ private:
 	bool saveFile(const QString &fileName);
 	void loadFile(const QString &fileName);
 	void setCurrentFile(const QString &fileName);
+	QString displayFileName();
+	void updateWindowTitle();
 	void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
 	void initSDLMixer();
 	void destroySDLMixer();
