@@ -92,7 +92,7 @@ QString findSoundFile(const QString &fileName)
 
 	
 TextRoom::TextRoom(QWidget *parent, Qt::WindowFlags f)
-		: QWidget(parent, f), sentenceTally(0),
+		: QWidget(parent, f), sentenceTally(0), cPosition(0),
 		sdlInitialized(false), sdlFailed(false)
 {
 	setupUi(this);
@@ -169,8 +169,34 @@ TextRoom::TextRoom(QWidget *parent, Qt::WindowFlags f)
 			if (file.exists()) curFile = args.at(1);
 	}
 	
+	// Reopen the document from the previous session here, where it is really
+	// loaded. readSettings() used to adopt the stored file name on its own,
+	// which left that name in the title and in the save target even when no
+	// document had been opened.
+	bool restoredLastFile = false;
+	if (curFile.isEmpty() && optOpenLastFile)
+	{
+		const QString lastFile = settings.value("RecentFiles/LastFile").toString();
+		if (!lastFile.isEmpty() && QFileInfo(lastFile).isFile())
+		{
+			curFile = lastFile;
+			restoredLastFile = true;
+			if (isSaveCursor)
+				cPosition = settings.value("RecentFiles/AtPosition", cPosition).toInt();
+		}
+	}
+
 	if (!curFile.isEmpty()) loadFile(curFile);
 	else newFile();
+
+	// A previous session that ended with an empty document has nothing to
+	// restore, so start with an untitled document rather than keeping the old
+	// file name on the window tab.
+	if (restoredLastFile && textEdit->document()->isEmpty())
+	{
+		newFile();
+		cPosition = 0;
+	}
 
 	// set cursor position
 	if ( isSaveCursor )
@@ -757,12 +783,12 @@ void TextRoom::readSettings()
 	
 	textEdit->setMaximumWidth(editorWidth);
 
-	if ( (optOpenLastFile = settings.value("RecentFiles/OpenLastFile", true).toBool()) )
-	{
-		curFile = settings.value("RecentFiles/LastFile", curFile).toString();
-		if ( (isSaveCursor = settings.value("RecentFiles/SavePosition", true).toBool() ))
-			cPosition = settings.value("RecentFiles/AtPosition", cPosition).toInt();
-	}
+	// Only the options live here. The stored file name must not be assigned to
+	// curFile from this slot: readSettings() also runs when the settings file
+	// changes (and from the Options dialog), and touching curFile there would
+	// change the window title and the save target behind the user's back.
+	optOpenLastFile = settings.value("RecentFiles/OpenLastFile", true).toBool();
+	isSaveCursor = settings.value("RecentFiles/SavePosition", true).toBool();
 
 	changeDefaultFont();
 
